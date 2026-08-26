@@ -393,12 +393,13 @@ export default function ConsortiumSimulator() {
       <header className="border-b" style={{ borderColor: LINE, background: INK }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
           <div>
-            <p className="text-[11px] tracking-[0.2em] uppercase" style={{ color: "#B9D2C4" }}>
-              PortoBank · Consórcios
-            </p>
-            <h1 className="font-serif text-2xl sm:text-3xl mt-0.5" style={{ color: "#F5F3EC" }}>
+            <img src="/lamont-logo.png" alt="Lamont Corretora de Seguros" className="h-6 sm:h-7 w-auto mb-1.5" />
+            <h1 className="font-serif text-2xl sm:text-3xl" style={{ color: "#F5F3EC" }}>
               Simulador de Consórcio
             </h1>
+            <p className="text-[11px] tracking-[0.15em] uppercase mt-0.5" style={{ color: "#B9D2C4" }}>
+              via PortoBank
+            </p>
           </div>
           <div className="hidden sm:flex flex-col items-end">
             <span className="text-[11px] uppercase tracking-wide" style={{ color: "#B9D2C4" }}>
