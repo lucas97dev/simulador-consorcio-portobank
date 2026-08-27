@@ -1,0 +1,16 @@
+// Cole isso no Firebase Console → Firestore Database → Regras (Rules) → Publicar.
+//
+// Libera leitura/escrita na coleção "simulacoes" — suficiente para uso interno
+// com uma única pessoa, já que o app não tem login. Qualquer pessoa com a URL
+// de configuração do Firebase (visível no código do site publicado) conseguiria
+// ler/escrever também; se quiser travar mais no futuro (com login), é só falar.
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /simulacoes/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
