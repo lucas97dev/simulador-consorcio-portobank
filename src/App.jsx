@@ -169,9 +169,8 @@ export default function ConsortiumSimulator() {
   const [savedSims, setSavedSims] = useState([]);
   const [loadingSaved, setLoadingSaved] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
-  const [savedPanelOpen, setSavedPanelOpen] = useState(true);
   const [saveStatus, setSaveStatus] = useState("");
-  const [viewMode, setViewMode] = useState("form"); // 'form' | 'compare'
+  const [viewMode, setViewMode] = useState("form"); // 'form' | 'salvas' | 'compare'
 
   const cloudSync = !!db;
 
@@ -313,6 +312,7 @@ export default function ConsortiumSimulator() {
     setPercentualLanceDesejado(sim.inputs.percentualLanceDesejado);
     setParcelaContemplacao(sim.inputs.parcelaContemplacao);
     setNomeSimulacao(sim.nome);
+    setViewMode("form");
   }
 
   function toggleSelecionada(id) {
@@ -437,6 +437,22 @@ export default function ConsortiumSimulator() {
     parcelaContemplacao,
   ]);
 
+  if (viewMode === "salvas") {
+    return (
+      <SavedSimsView
+        savedSims={savedSims}
+        loadingSaved={loadingSaved}
+        selectedIds={selectedIds}
+        toggleSelecionada={toggleSelecionada}
+        carregarSimulacao={carregarSimulacao}
+        excluirSimulacao={excluirSimulacao}
+        cloudSync={cloudSync}
+        onVoltar={() => setViewMode("form")}
+        onComparar={() => setViewMode("compare")}
+      />
+    );
+  }
+
   if (viewMode === "compare") {
     const selecionadas = savedSims.filter((s) => selectedIds.includes(s.id));
     return <ComparativoView simulacoes={selecionadas} onVoltar={() => setViewMode("form")} />;
@@ -474,127 +490,59 @@ export default function ConsortiumSimulator() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-        <SectionCard
-          title="Simulações Salvas"
-          icon={<ClipboardList size={16} style={{ color: GOLD }} />}
-          right={
-            <div className="flex items-center gap-3">
+      <div className="border-b" style={{ borderColor: LINE, background: PAPER_RAISED }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-end">
+          <button
+            onClick={() => setViewMode("salvas")}
+            className="flex items-center gap-2 text-[13px] font-medium px-3 py-1.5 rounded-md"
+            style={{ color: INK }}
+          >
+            <ClipboardList size={15} style={{ color: GOLD }} />
+            Simulações Salvas
+            {savedSims.length > 0 && (
               <span
-                className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
-                style={{
-                  background: cloudSync ? TEAL_SOFT : GOLD_SOFT,
-                  color: cloudSync ? TEAL : "#7A5D1E",
-                }}
-                title={cloudSync ? "Salvo na nuvem (Firebase)" : "Salvo só neste navegador"}
+                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                style={{ background: GOLD_SOFT, color: "#7A5D1E" }}
               >
-                {cloudSync ? "Nuvem" : "Só este navegador"}
+                {savedSims.length}
               </span>
-              <button onClick={() => setSavedPanelOpen((v) => !v)} style={{ color: INK_SOFT }}>
-                {savedPanelOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-            </div>
-          }
-        >
-          {savedPanelOpen && (
-            <>
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-                <label className="block flex-1">
-                  <span className="text-xs font-medium tracking-wide" style={{ color: INK_SOFT }}>
-                    Nome do cliente / da simulação
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Ex.: João Pereira — Opção A"
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                    style={{ borderColor: LINE, background: PAPER_RAISED, color: INK }}
-                    value={nomeSimulacao}
-                    onChange={(e) => setNomeSimulacao(e.target.value)}
-                  />
-                </label>
-                <button
-                  onClick={salvarSimulacao}
-                  className="flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold shrink-0"
-                  style={{ background: INK, color: "#F5F3EC" }}
-                >
-                  <Save size={14} /> Salvar simulação atual
-                </button>
-              </div>
-              {saveStatus && (
-                <p className="mt-2 text-[12px]" style={{ color: TEAL }}>
-                  {saveStatus}
-                </p>
-              )}
+            )}
+          </button>
+        </div>
+      </div>
 
-              <div className="mt-4">
-                {loadingSaved && (
-                  <p className="text-[12px]" style={{ color: INK_SOFT }}>
-                    Carregando simulações salvas…
-                  </p>
-                )}
-                {!loadingSaved && savedSims.length === 0 && (
-                  <p className="text-[12px]" style={{ color: INK_SOFT }}>
-                    Nenhuma simulação salva ainda. Ajuste os campos abaixo e clique em "Salvar simulação atual".
-                  </p>
-                )}
-                {!loadingSaved && savedSims.length > 0 && (
-                  <div className="space-y-2">
-                    {savedSims.map((s) => (
-                      <div
-                        key={s.id}
-                        className="flex items-center gap-3 rounded-md border px-3 py-2"
-                        style={{ borderColor: LINE, background: PAPER }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(s.id)}
-                          onChange={() => toggleSelecionada(s.id)}
-                          className="shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" style={{ color: INK }}>
-                            {s.nome}
-                          </p>
-                          <p className="text-[11px]" style={{ color: INK_SOFT }}>
-                            {s.modalidade} · {s.tipoContratacao} ·{" "}
-                            {new Date(s.salvoEm).toLocaleDateString("pt-BR")} · parcela{" "}
-                            {brl(s.resultados?.valorParcela)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => carregarSimulacao(s)}
-                          title="Carregar no formulário"
-                          className="p-1.5 rounded-md shrink-0"
-                          style={{ color: INK_SOFT }}
-                        >
-                          <FolderOpen size={15} />
-                        </button>
-                        <button
-                          onClick={() => excluirSimulacao(s.id)}
-                          title="Excluir"
-                          className="p-1.5 rounded-md shrink-0"
-                          style={{ color: RED }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => setViewMode("compare")}
-                disabled={selectedIds.length === 0}
-                className="mt-4 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-40"
-                style={{ background: GOLD, color: "#2A1F0A" }}
-              >
-                <FileOutput size={14} />
-                Gerar comparativo em PDF ({selectedIds.length} selecionada
-                {selectedIds.length === 1 ? "" : "s"})
-              </button>
-            </>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+        <SectionCard title="Salvar Simulação Atual" icon={<Save size={16} style={{ color: GOLD }} />}>
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <label className="block flex-1">
+              <span className="text-xs font-medium tracking-wide" style={{ color: INK_SOFT }}>
+                Nome do cliente / da simulação
+              </span>
+              <input
+                type="text"
+                placeholder="Ex.: João Pereira — Opção A"
+                className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
+                style={{ borderColor: LINE, background: PAPER_RAISED, color: INK }}
+                value={nomeSimulacao}
+                onChange={(e) => setNomeSimulacao(e.target.value)}
+              />
+            </label>
+            <button
+              onClick={salvarSimulacao}
+              className="flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold shrink-0"
+              style={{ background: INK, color: "#F5F3EC" }}
+            >
+              <Save size={14} /> Salvar simulação atual
+            </button>
+          </div>
+          {saveStatus && (
+            <p className="mt-2 text-[12px]" style={{ color: TEAL }}>
+              {saveStatus}
+            </p>
           )}
+          <p className="mt-2 text-[11px]" style={{ color: INK_SOFT }}>
+            As simulações salvas ficam no menu "Simulações Salvas" (topo da página).
+          </p>
         </SectionCard>
       </div>
 
@@ -893,6 +841,118 @@ export default function ConsortiumSimulator() {
 // is clicked. Uses the browser's native print dialog ("Salvar como PDF"),
 // so no external PDF library is needed.
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Página dedicada "Simulações Salvas" — lista, carrega, exclui e seleciona
+// simulações para o comparativo.
+// ---------------------------------------------------------------------------
+function SavedSimsView({
+  savedSims,
+  loadingSaved,
+  selectedIds,
+  toggleSelecionada,
+  carregarSimulacao,
+  excluirSimulacao,
+  cloudSync,
+  onVoltar,
+  onComparar,
+}) {
+  return (
+    <div className="min-h-screen w-full" style={{ background: PAPER, color: INK }}>
+      <header className="border-b" style={{ borderColor: LINE, background: INK }}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between">
+          <button
+            onClick={onVoltar}
+            className="flex items-center gap-2 text-sm font-medium"
+            style={{ color: "#F5F3EC" }}
+          >
+            <ArrowLeft size={16} /> Voltar ao simulador
+          </button>
+          <span
+            className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full"
+            style={{
+              background: cloudSync ? TEAL_SOFT : GOLD_SOFT,
+              color: cloudSync ? TEAL : "#7A5D1E",
+            }}
+            title={cloudSync ? "Salvo na nuvem (Firebase)" : "Salvo só neste navegador"}
+          >
+            {cloudSync ? "Nuvem" : "Só este navegador"}
+          </span>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <h1 className="font-serif text-2xl mb-4" style={{ color: INK }}>
+          Simulações Salvas
+        </h1>
+
+        {loadingSaved && (
+          <p className="text-[13px]" style={{ color: INK_SOFT }}>
+            Carregando simulações salvas…
+          </p>
+        )}
+        {!loadingSaved && savedSims.length === 0 && (
+          <p className="text-[13px]" style={{ color: INK_SOFT }}>
+            Nenhuma simulação salva ainda. Volte ao simulador, preencha os dados e clique em "Salvar simulação atual".
+          </p>
+        )}
+        {!loadingSaved && savedSims.length > 0 && (
+          <div className="space-y-2">
+            {savedSims.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center gap-3 rounded-md border px-3 py-3"
+                style={{ borderColor: LINE, background: PAPER_RAISED }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(s.id)}
+                  onChange={() => toggleSelecionada(s.id)}
+                  className="shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: INK }}>
+                    {s.nome}
+                  </p>
+                  <p className="text-[11px]" style={{ color: INK_SOFT }}>
+                    {s.modalidade} · {s.tipoContratacao} · {new Date(s.salvoEm).toLocaleDateString("pt-BR")} · parcela{" "}
+                    {brl(s.resultados?.valorParcela)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => carregarSimulacao(s)}
+                  title="Carregar no formulário"
+                  className="p-1.5 rounded-md shrink-0"
+                  style={{ color: INK_SOFT }}
+                >
+                  <FolderOpen size={16} />
+                </button>
+                <button
+                  onClick={() => excluirSimulacao(s.id)}
+                  title="Excluir"
+                  className="p-1.5 rounded-md shrink-0"
+                  style={{ color: RED }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={onComparar}
+          disabled={selectedIds.length === 0}
+          className="mt-5 flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-40"
+          style={{ background: GOLD, color: "#2A1F0A" }}
+        >
+          <FileOutput size={14} />
+          Gerar comparativo em PDF ({selectedIds.length} selecionada{selectedIds.length === 1 ? "" : "s"})
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ComparativoView({ simulacoes, onVoltar }) {
   const [gerando, setGerando] = useState(false);
   const [erroPdf, setErroPdf] = useState("");
