@@ -1008,6 +1008,7 @@ function ComparativoView({ simulacoes, onVoltar }) {
 <style>
   * { box-sizing: border-box; }
   body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 28px 32px; color: ${INK}; background: #fff; }
+  .logo { height: 26px; width: auto; margin-bottom: 10px; display: block; }
   .eyebrow { font-family: Arial, sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: ${GOLD}; margin: 0 0 4px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
   .meta { font-family: Arial, sans-serif; font-size: 12px; color: ${INK_SOFT}; margin: 0 0 20px; }
@@ -1028,7 +1029,7 @@ function ComparativoView({ simulacoes, onVoltar }) {
 </head>
 <body>
   <div class="toolbar"><button onclick="window.print()">Imprimir / Salvar como PDF</button></div>
-  <p class="eyebrow">PortoBank · Consórcios</p>
+  <img class="logo" src="${LAMONT_LOGO}" alt="Lamont Corretora de Seguros" />
   <h1>Comparativo de Propostas</h1>
   <p class="meta">Gerado em ${new Date().toLocaleDateString("pt-BR")} · ${simulacoes.length} proposta${
         simulacoes.length === 1 ? "" : "s"
@@ -1094,9 +1095,7 @@ function ComparativoView({ simulacoes, onVoltar }) {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <p className="text-[11px] tracking-[0.2em] uppercase" style={{ color: GOLD }}>
-          PortoBank · Consórcios
-        </p>
+        <img src="/lamont-logo.png" alt="Lamont Corretora de Seguros" className="h-6 w-auto mb-2" />
         <h1 className="font-serif text-2xl mt-0.5 mb-1" style={{ color: INK }}>
           Comparativo de Propostas
         </h1>
